@@ -19,7 +19,11 @@ import type {
   SerieDetalle,
 } from '../types';
 
-const BASE = import.meta.env.VITE_API_URL ?? '';
+// VITE_API_URL (build-time) manda. Si no se define: en producción se usa el
+// backend de Railway como fallback; en dev queda '' para el proxy de Vite.
+const BASE =
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.PROD ? 'https://backinttablero-production.up.railway.app' : '');
 
 async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { signal });
