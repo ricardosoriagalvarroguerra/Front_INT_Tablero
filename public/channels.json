@@ -1,0 +1,41 @@
+{
+  "_nota": "Lista editable del muro de medios (§6). channelId verificados 2026-06-20. Edita este archivo sin recompilar.",
+  "channels": [
+    {
+      "id": "bloomberg",
+      "nombre": "Bloomberg Television",
+      "channelId": "UCIALMKvObZNtJ6AmdCLP7Lg",
+      "handle": "markets",
+      "categoria": "financiero",
+      "destacado": true
+    },
+    {
+      "id": "cnbc",
+      "nombre": "CNBC",
+      "channelId": "UCvJJ_dzjViJCoLf5uKUTwoA",
+      "handle": "CNBC",
+      "categoria": "financiero"
+    },
+    {
+      "id": "yahoo-finance",
+      "nombre": "Yahoo Finance",
+      "channelId": "UCEAZeUIeJs0IjQiqTCdVSIg",
+      "handle": "YahooFinance",
+      "categoria": "financiero"
+    },
+    {
+      "id": "dw-news",
+      "nombre": "DW News",
+      "channelId": "UCknLrEdhRCp1aegoMqRaCZg",
+      "handle": "DWNews",
+      "categoria": "politico"
+    },
+    {
+      "id": "al-jazeera",
+      "nombre": "Al Jazeera English",
+      "channelId": "UCNye-wNBqNL5ZzHSJj3l8Bg",
+      "handle": "aljazeeraenglish",
+      "categoria": "politico"
+    }
+  ]
+}
