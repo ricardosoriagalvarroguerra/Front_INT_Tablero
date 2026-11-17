@@ -15,6 +15,7 @@ import { FreshnessBadge, EstadoVacio } from '../primitives/Estado';
 import { num, pct, SD } from '../../lib/format';
 import { useAnalisis } from '../../lib/useAnalisis';
 import { Semaforo, TiraAlertas } from '../analisis/Cabecera';
+import { LivePlayer } from '../primitives/LivePlayer';
 
 const REG_TONE = { 'risk-on': 'pos', 'risk-off': 'neg', neutral: 'neutral' } as const;
 const MERCADOS_CLAVE = ['BRENT', 'WTI', 'GOLD', 'COPPER', 'VIX', 'DXY', 'SP500', 'EURUSD', 'USDBRL'];
@@ -192,9 +193,7 @@ export function ResumenPanel({ now, onGoto }: { now: Date; onGoto?: (t: string) 
 
         <Panel className="flex flex-col">
           <SectionTitle id="📺" title="Bloomberg en vivo" right={<Ver onGoto={onGoto} to="medios" />} />
-          <div className="relative w-full aspect-video bg-black">
-            <iframe className="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/live_stream?channel=UCIALMKvObZNtJ6AmdCLP7Lg&autoplay=0&mute=1" title="Bloomberg Television" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
-          </div>
+          <LivePlayer channelId="UCIALMKvObZNtJ6AmdCLP7Lg" titulo="Bloomberg Television" />
         </Panel>
       </div>
     </div>

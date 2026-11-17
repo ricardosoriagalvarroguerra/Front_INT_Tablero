@@ -32,22 +32,31 @@ const BASE =
   (import.meta.env.PROD ? 'https://backinttablero-production.up.railway.app' : '');
 
 // ── Origen de los datos (api en vivo / respaldo embebido) ─────────────────
+// Por ruta: una sección puede venir del respaldo (API caído, o API vivo pero sin
+// datos todavía: base recién aprovisionada o primera ingesta en curso).
 export type Origen = 'api' | 'respaldo' | 'desconocido';
 interface SnapshotFile {
   generado: string;
   rutas: Record<string, unknown>;
 }
-let origen: Origen = 'desconocido';
+let apiVivo = false;
+const respaldoRutas = new Set<string>();
 let snapshotMeta: { generado: string } | null = null;
-const subs = new Set<() => void>();
-function setOrigen(o: Origen) {
-  if (o === origen) return;
-  // 'api' gana: con que una ruta responda en vivo, el tablero está en línea.
-  if (origen === 'api' && o === 'respaldo') return;
-  origen = o;
-  subs.forEach((f) => f());
+interface EstadoOrigen {
+  origen: Origen;
+  snapshot: { generado: string } | null;
+  rutasRespaldo: number;
 }
-export const getOrigen = () => ({ origen, snapshot: snapshotMeta });
+let estadoOrigen: EstadoOrigen = { origen: 'desconocido', snapshot: null, rutasRespaldo: 0 };
+const subs = new Set<() => void>();
+function publicar() {
+  const origen: Origen = respaldoRutas.size ? 'respaldo' : apiVivo ? 'api' : 'desconocido';
+  if (origen !== estadoOrigen.origen || respaldoRutas.size !== estadoOrigen.rutasRespaldo || snapshotMeta !== estadoOrigen.snapshot) {
+    estadoOrigen = { origen, snapshot: snapshotMeta, rutasRespaldo: respaldoRutas.size };
+    subs.forEach((f) => f());
+  }
+}
+export const getOrigen = () => estadoOrigen;
 export function subscribeOrigen(f: () => void) {
   subs.add(f);
   return () => {
@@ -66,23 +75,50 @@ function cargarSnapshot(): Promise<SnapshotFile | null> {
     .catch(() => null));
 }
 
+/** ¿La respuesta del API viene sin datos útiles? (entonces se prefiere el respaldo) */
+function vacia(path: string, d: unknown): boolean {
+  if (d == null) return true;
+  if (Array.isArray(d)) {
+    if (path === '/api/riesgo-soberano') return !d.some((r) => (r as { score: unknown }).score != null);
+    return d.length === 0 && path !== '/api/alertas';
+  }
+  const o = d as Record<string, unknown>;
+  if (path === '/api/analisis') return o.completo === false || !(o.ciclo as { agregados?: unknown[] })?.agregados?.length;
+  if (path === '/api/heatmap-macro') return !(o.celdas as unknown[])?.length;
+  if (path === '/api/fx-commodities') return !(o.series as unknown[])?.length;
+  if (path.startsWith('/api/historico/')) return !(o.indicadores as unknown[])?.length;
+  return false;
+}
+
+async function desdeRespaldo<T>(path: string): Promise<T | undefined> {
+  const snap = await cargarSnapshot();
+  const hit = snap?.rutas[path];
+  if (hit === undefined) return undefined;
+  respaldoRutas.add(path);
+  publicar();
+  return hit as T;
+}
+
 async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
+  let json: T;
   try {
     const res = await fetch(`${BASE}${path}`, { signal });
     if (!res.ok) throw new Error(`${path} → ${res.status}`);
-    const json = (await res.json()) as T;
-    setOrigen('api');
-    return json;
+    json = (await res.json()) as T;
+    apiVivo = true;
   } catch (err) {
     if ((err as Error).name === 'AbortError') throw err;
-    const snap = await cargarSnapshot();
-    const hit = snap?.rutas[path];
-    if (hit !== undefined) {
-      setOrigen('respaldo');
-      return hit as T;
-    }
+    const r = await desdeRespaldo<T>(path);
+    if (r !== undefined) return r;
     throw err;
   }
+  if (vacia(path, json)) {
+    const r = await desdeRespaldo<T>(path);
+    if (r !== undefined) return r;
+  }
+  respaldoRutas.delete(path);
+  publicar();
+  return json;
 }
 
 export const api = {

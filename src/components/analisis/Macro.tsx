@@ -38,7 +38,7 @@ export function CicloGlobal({ a }: { a: Analisis }) {
   return (
     <Seccion
       titulo="Ciclo global"
-      sub={`Agregados oficiales del FMI (WEO) 2015–${Math.max(...a.ciclo.agregados.flatMap((g) => g.serie.map((p) => p.anio)))} · banda sombreada = proyección`}
+      sub={`Agregados oficiales del FMI (WEO) 2015–${a.ciclo.agregados.length ? Math.max(...a.ciclo.agregados.flatMap((g) => g.serie.map((p) => p.anio))) : Y + 5} · banda sombreada = proyección`}
       right={
         <div className="flex gap-1">
           {(['crecimiento', 'inflacion', 'deuda'] as const).map((k) => (
@@ -172,7 +172,7 @@ export function CicloMonetario({ a }: { a: Analisis }) {
   return (
     <Seccion
       titulo="Ciclo monetario global"
-      sub={`Tasas de política de ${m.bancos} bancos centrales (BIS, fin de mes) · zona euro contada una vez · corte ${fmtMes(m.corte)}`}
+      sub={`Tasas de política de ${m.bancos} bancos centrales (BIS, fin de mes) · zona euro contada una vez · corte ${m.corte ? fmtMes(m.corte) : 's/d'}`}
       right={<span className="font-medium" style={{ color: m.fase.includes('restric') || m.fase === 'endurecimiento' ? 'var(--neg)' : m.fase === 'pausa' ? 'var(--accent)' : 'var(--pos)' }}>Fase: {m.fase}</span>}
     >
       <div className="grid lg:grid-cols-[1fr_1fr]">
