@@ -10,13 +10,9 @@ import type { MediaChannel } from '../../types';
 import { Panel } from '../primitives/Panel';
 import { SectionTitle } from '../primitives/SectionTitle';
 import { Tag } from '../primitives/Tag';
+import { LivePlayer } from '../primitives/LivePlayer';
 
-function liveSrc(channelId: string): string {
-  const params = new URLSearchParams({ channel: channelId, autoplay: '0', mute: '1' });
-  return `https://www.youtube.com/embed/live_stream?${params.toString()}`;
-}
-
-function ChannelFrame({ ch, big }: { ch: MediaChannel; big?: boolean }) {
+function ChannelFrame({ ch }: { ch: MediaChannel; big?: boolean }) {
   return (
     <Panel className="flex flex-col">
       <SectionTitle
@@ -28,17 +24,7 @@ function ChannelFrame({ ch, big }: { ch: MediaChannel; big?: boolean }) {
           </Tag>
         }
       />
-      <div className={`relative w-full ${big ? 'aspect-video' : 'aspect-video'} bg-black`}>
-        <iframe
-          className="absolute inset-0 w-full h-full"
-          src={liveSrc(ch.channelId)}
-          title={ch.nombre}
-          loading="lazy"
-          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          referrerPolicy="strict-origin-when-cross-origin"
-        />
-      </div>
+      <LivePlayer channelId={ch.channelId} titulo={ch.nombre} />
     </Panel>
   );
 }

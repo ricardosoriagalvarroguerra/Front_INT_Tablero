@@ -36,11 +36,11 @@ interface HeaderProps {
 
 /** Aviso de origen: API en vivo o respaldo embebido con su fecha de corte. */
 function OrigenBadge() {
-  const { origen, snapshot } = useOrigen();
+ const { origen, snapshot, rutasRespaldo } = useOrigen();
   if (origen !== 'respaldo') return null;
   const f = snapshot ? new Date(snapshot.generado).toLocaleDateString('es', { day: 'numeric', month: 'short' }) : 's/d';
   return (
-    <span title="El API no responde: se muestra la última foto real de la ingesta embebida en el tablero." className="hidden md:flex items-center gap-1.5 px-2 h-8 rounded-[4px] text-[11px]" style={{ color: 'var(--accent)', border: '1px solid var(--accent)' }}>
+    <span title={`${rutasRespaldo} sección(es) muestran la última foto real de la ingesta embebida en el tablero: el API no responde o todavía está cargando sus datos. Se reintenta solo.`} className="hidden md:flex items-center gap-1.5 px-2 h-8 rounded-[4px] text-[11px]" style={{ color: 'var(--accent)', border: '1px solid var(--accent)' }}>
       <span className="w-1.5 h-1.5 rounded-full bg-accent" />
       Respaldo al {f}
     </span>

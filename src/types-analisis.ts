@@ -188,6 +188,8 @@ export interface VulnFila {
 
 export interface Analisis {
   generado: string;
+  /** false mientras la base está vacía o la primera ingesta va a medias */
+  completo?: boolean;
   corte: { mercados: string | null; monetario: string; weo: string };
   tesis: { titular: string; focos: string; apoyos: string; puntos: string[] };
   semaforo: SemaforoItem[];
