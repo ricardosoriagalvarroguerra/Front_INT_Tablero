@@ -74,6 +74,8 @@ export interface SerieDetalle {
   unidad: string;
   fuente: string;
   puntos: SeriePunto[];
+  /** Proyecciones (FMI WEO) posteriores al año en curso, si las hay. */
+  proyeccion?: SeriePunto[];
 }
 
 // ─── Vista 1 · Pulso global (qué cambió hoy) ──────────────────────────
@@ -228,6 +230,9 @@ export interface Fuente {
   estado: Estado;
   latenciaMs: Maybe;
   ultimaVerificacion: string | null;
+  /** Fecha del dato más reciente que aportó la fuente. */
+  ultimoDato?: string | null;
+  periodicidad?: 'diaria' | 'semanal' | 'mensual' | 'anual' | null;
   licencia: string;
 }
 

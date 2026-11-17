@@ -95,11 +95,11 @@ export function CalendarioPanel(_: { now: Date }) {
         right={
           <span className="flex items-center gap-1.5">
             <button onClick={() => navMes(-1)} className="px-1.5 h-6 surface-sunk rounded-[3px] hover:text-accent">‹</button>
-            <span className="mono text-[10px] uppercase tracking-wider text-muted w-32 text-center">
+            <span className="mono text-[10px] text-muted w-32 text-center">
               {MESES[mes.m]} {mes.y}
             </span>
             <button onClick={() => navMes(1)} className="px-1.5 h-6 surface-sunk rounded-[3px] hover:text-accent">›</button>
-            <button onClick={() => setMes(inicial)} className="ml-1 px-2 h-6 surface-sunk rounded-[3px] hover:text-accent uppercase">hoy</button>
+            <button onClick={() => setMes(inicial)} className="ml-1 px-2 h-6 surface-sunk rounded-[3px] hover:text-accent">hoy</button>
           </span>
         }
       />
@@ -107,7 +107,7 @@ export function CalendarioPanel(_: { now: Date }) {
       {/* cabecera de días */}
       <div className="grid grid-cols-7 border-b border-token">
         {DIAS.map((d) => (
-          <div key={d} className="px-2 py-1 mono text-[9px] uppercase tracking-wider text-subtle text-center">
+          <div key={d} className="px-2 py-1 mono text-[9px] text-subtle text-center">
             {d}
           </div>
         ))}

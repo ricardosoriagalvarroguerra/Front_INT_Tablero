@@ -26,7 +26,7 @@ function Segment<T extends string>({
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="mono text-[9px] uppercase tracking-wider text-subtle">{label}</span>
+      <span className="mono text-[9px] text-subtle">{label}</span>
       <div className="flex items-center surface-sunk rounded-[4px] p-0.5 gap-0.5">
         {options.map((o) => (
           <button
@@ -53,7 +53,7 @@ export function FilterBar() {
       {(f.region !== 'todas' || f.grupo !== 'todos' || f.query) && (
         <button
           onClick={f.reset}
-          className="mono text-[9px] uppercase tracking-wider text-subtle hover:text-accent ml-auto"
+          className="mono text-[9px] text-subtle hover:text-accent ml-auto"
         >
           ✕ limpiar filtros
         </button>

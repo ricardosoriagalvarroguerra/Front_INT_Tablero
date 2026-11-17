@@ -84,7 +84,7 @@ export function MediaWall() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
       <div className="lg:col-span-2">{destacado && <ChannelFrame ch={destacado} big />}</div>
       <div className="flex flex-col gap-3">
-        <div className="mono text-[10px] uppercase tracking-wider text-subtle px-1">
+        <div className="mono text-[10px] text-subtle px-1">
           Canales · {resto.length}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">

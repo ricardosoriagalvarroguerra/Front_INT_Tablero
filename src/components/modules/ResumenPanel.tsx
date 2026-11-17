@@ -13,15 +13,17 @@ import { Sparkline } from '../primitives/Sparkline';
 import { WorldMap } from '../charts/WorldMap';
 import { FreshnessBadge, EstadoVacio } from '../primitives/Estado';
 import { num, pct, SD } from '../../lib/format';
+import { useAnalisis } from '../../lib/useAnalisis';
+import { Semaforo, TiraAlertas } from '../analisis/Cabecera';
 
 const REG_TONE = { 'risk-on': 'pos', 'risk-off': 'neg', neutral: 'neutral' } as const;
-const MERCADOS_CLAVE = ['WTI', 'BRENT', 'GOLD', 'COPPER', 'VIX', 'DXY', 'EURUSD'];
+const MERCADOS_CLAVE = ['BRENT', 'WTI', 'GOLD', 'COPPER', 'VIX', 'DXY', 'SP500', 'EURUSD', 'USDBRL'];
 
 function Ver({ onGoto, to }: { onGoto?: (t: string) => void; to: string }) {
   if (!onGoto) return null;
   return (
-    <button onClick={() => onGoto(to)} className="mono text-[9px] uppercase tracking-wider text-accent hover:underline">
-      detalle →
+    <button onClick={() => onGoto(to)} className="text-[11px] text-accent hover:underline">
+      Detalle →
     </button>
   );
 }
@@ -38,9 +40,9 @@ export function ResumenPanel({ now, onGoto }: { now: Date; onGoto?: (t: string) 
   const riesgo = useView(api.riesgo);
   const conf = useView(api.conflictos);
   const tasas = useView(api.tasasReales);
+  const an = useAnalisis();
 
   const mercados = (fx.data?.series ?? []).filter((s) => MERCADOS_CLAVE.includes(s.id));
-  const topRiesgo = (riesgo.data ?? []).filter((r) => r.score != null).slice(0, 7);
   const topConf = (conf.data ?? []).slice(0, 5);
   const tasasExt = [...(tasas.data ?? [])].filter((t) => t.tasaReal != null).sort((a, b) => a.tasaReal! - b.tasaReal!).slice(0, 6);
 
@@ -61,14 +63,29 @@ export function ResumenPanel({ now, onGoto }: { now: Date; onGoto?: (t: string) 
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Tesis + semáforo + alertas (capa analítica) */}
+      {an.data && (
+        <>
+          <Panel className="px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-[15px] font-semibold leading-snug">{an.data.tesis.titular}</p>
+              <button onClick={() => onGoto?.('analisis')} className="text-[11px] text-accent hover:underline shrink-0 mt-1">Análisis completo →</button>
+            </div>
+            <p className="text-[12px] mt-1"><span style={{ color: 'var(--neg)' }}>{an.data.tesis.focos}</span> <span style={{ color: 'var(--pos)' }}>{an.data.tesis.apoyos}</span></p>
+          </Panel>
+          <Semaforo a={an.data} onGoto={onGoto} compacto />
+          <TiraAlertas alertas={an.data.alertas} onGoto={onGoto} />
+        </>
+      )}
+
       {/* Estado global */}
       <Panel className="px-3 py-2 flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <div className="relative w-2 h-2"><div className="absolute inset-0 rounded-full bg-accent pulse-dot" /><div className="w-2 h-2 rounded-full bg-accent" /></div>
-          <span className="mono text-[11px] uppercase tracking-[0.16em]">Estado global</span>
+          <span className="text-[12px] font-medium">Mercados hoy</span>
         </div>
         {fx.data && (
-          <span className="flex items-center gap-1.5"><span className="mono text-[9px] text-subtle uppercase">régimen</span><Tag tone={REG_TONE[fx.data.regimen]}>{fx.data.regimen}</Tag></span>
+          <span className="flex items-center gap-1.5"><span className="mono text-[9px] text-subtle">régimen</span><Tag tone={REG_TONE[fx.data.regimen]}>{fx.data.regimen}</Tag></span>
         )}
         <span className="mono text-[10px] text-muted">{pulso.data?.length ?? 0} señales del día</span>
         <span className="mono text-[10px] text-muted">{(riesgo.data ?? []).filter((r) => (r.score ?? 0) >= 66).length} economías en alto estrés</span>
@@ -78,7 +95,7 @@ export function ResumenPanel({ now, onGoto }: { now: Date; onGoto?: (t: string) 
       {/* Pulso del día */}
       <div>
         <div className="flex items-center justify-between mb-2 px-1">
-          <span className="mono text-[10px] uppercase tracking-[0.14em] text-muted"><span className="text-subtle mr-1.5">1</span>Pulso · qué cambió hoy</span>
+          <span className="text-[12px] font-semibold">Pulso · qué cambió hoy</span>
           <Ver onGoto={onGoto} to="pulso" />
         </div>
         {pulso.estado !== 'ok' ? (
@@ -122,15 +139,15 @@ export function ResumenPanel({ now, onGoto }: { now: Date; onGoto?: (t: string) 
           })}
         </Panel>
 
-        {/* Economías en estrés (riesgo) */}
+        {/* Vulnerabilidad macro-financiera (capa analítica) */}
         <Panel>
-          <SectionTitle id="3" title="Economías en estrés" right={<Ver onGoto={onGoto} to="riesgo" />} />
-          {riesgo.estado !== 'ok' ? <EstadoVacio estado={riesgo.estado} /> : topRiesgo.map((r) => (
-            <div key={r.iso3} className="flex items-center gap-2 h-8 px-3 border-b border-token row-hover">
-              <span className="mono text-[11px] w-28 truncate"><span className="text-subtle mr-1">{r.iso3}</span>{r.pais}</span>
-              <div className="flex-1 h-2 surface-sunk rounded-[2px] overflow-hidden"><div className="h-full" style={{ width: `${r.score ?? 0}%`, background: scoreColor(r.score) }} /></div>
-              <span className="mono text-[11px] tabular-nums w-7 text-right" style={{ color: scoreColor(r.score) }}>{r.score ?? SD}</span>
-              <span className="mono text-[9px] tabular-nums w-14 text-right text-subtle">{r.yield10y != null ? num(r.yield10y, 2) + '%' : SD}</span>
+          <SectionTitle title="Economías más vulnerables" right={<Ver onGoto={onGoto} to="analisis" />} />
+          {!an.data ? <EstadoVacio estado={an.estado} /> : an.data.vulnerabilidad.filas.slice(0, 9).map((r) => (
+            <div key={r.iso3} className="flex items-center gap-2 h-8 px-3 border-b border-token row-hover" title={r.principales.join(', ')}>
+              <span className="text-[12px] w-28 truncate">{r.pais}</span>
+              <div className="flex-1 h-1.5 surface-sunk rounded-full overflow-hidden border-0"><div className="h-full rounded-full" style={{ width: `${r.score}%`, background: scoreColor(r.score >= 65 ? 70 : r.score >= 50 ? 50 : 20) }} /></div>
+              <span className="text-[12px] tabular-nums w-7 text-right font-medium">{r.score}</span>
+              <span className="text-[10px] w-28 truncate text-subtle">{r.principales[0] ?? ''}</span>
             </div>
           ))}
         </Panel>

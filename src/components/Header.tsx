@@ -1,5 +1,7 @@
 import type { RefObject } from 'react';
 import type { Theme } from '../types';
+import { useOrigen } from '../lib/useOrigen';
+import { useAnalisis } from '../lib/useAnalisis';
 
 export interface ClockParts {
   date: string;
@@ -28,6 +30,36 @@ interface HeaderProps {
   query: string;
   setQuery: (q: string) => void;
   now: Date;
+  onNota: () => void;
+  onAlertas: () => void;
+}
+
+/** Aviso de origen: API en vivo o respaldo embebido con su fecha de corte. */
+function OrigenBadge() {
+  const { origen, snapshot } = useOrigen();
+  if (origen !== 'respaldo') return null;
+  const f = snapshot ? new Date(snapshot.generado).toLocaleDateString('es', { day: 'numeric', month: 'short' }) : 's/d';
+  return (
+    <span title="El API no responde: se muestra la última foto real de la ingesta embebida en el tablero." className="hidden md:flex items-center gap-1.5 px-2 h-8 rounded-[4px] text-[11px]" style={{ color: 'var(--accent)', border: '1px solid var(--accent)' }}>
+      <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+      Respaldo al {f}
+    </span>
+  );
+}
+
+function AlertasBadge({ onClick }: { onClick: () => void }) {
+  const { data } = useAnalisis();
+  const xs = data?.alertas ?? [];
+  const altas = xs.filter((a) => a.nivel === 'alta').length;
+  const medias = xs.filter((a) => a.nivel === 'media').length;
+  if (!xs.length) return null;
+  return (
+    <button onClick={onClick} title="Alertas activas (ver Análisis)" className="flex items-center gap-1.5 px-2 h-8 surface-sunk rounded-[4px] text-[11px] hover:ring-accent">
+      {altas > 0 && <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--neg)' }} />{altas}</span>}
+      {medias > 0 && <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-accent" />{medias}</span>}
+      <span className="hidden md:inline text-muted">alertas</span>
+    </button>
+  );
 }
 
 export function Header({
@@ -39,6 +71,8 @@ export function Header({
   query,
   setQuery,
   now,
+  onNota,
+  onAlertas,
 }: HeaderProps) {
   const t = formatNow(now);
   return (
@@ -53,12 +87,8 @@ export function Header({
             <div className="w-2 h-2 rounded-full bg-accent" />
             <div className="absolute inset-0 w-2 h-2 rounded-full bg-accent pulse-dot" />
           </div>
-          <div className="mono text-[11px] tracking-[0.18em] sm:tracking-[0.22em] uppercase whitespace-nowrap">
-            Tablero INT
-          </div>
-          <span className="hidden lg:inline mono text-[9px] uppercase tracking-wider text-subtle">
-            Global · v0.1 · 2026.06
-          </span>
+          <div className="text-[13px] font-semibold whitespace-nowrap">Tablero INT</div>
+          <span className="hidden lg:inline text-[10px] text-subtle">Economía internacional · v0.9</span>
         </div>
 
         {/* search */}
@@ -69,7 +99,7 @@ export function Header({
               ref={searchRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar país, indicador…"
+              placeholder="Filtrar países…"
               className="flex-1 min-w-0 bg-transparent outline-none mono text-[12px] placeholder:text-subtle"
             />
             <span className="kbd hidden sm:inline">/</span>
@@ -78,11 +108,21 @@ export function Header({
 
         {/* actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto shrink-0">
+          <OrigenBadge />
+          <AlertasBadge onClick={onAlertas} />
+          <button
+            onClick={onNota}
+            title="Nota ejecutiva imprimible [N]"
+            className="text-[11px] px-2 h-8 surface-sunk rounded-[4px] flex items-center gap-1.5 hover:ring-accent"
+          >
+            Nota
+            <span className="kbd hidden md:inline">N</span>
+          </button>
           <button
             onClick={onRefresh}
             title="Refrescar [R]"
             aria-label="Refrescar"
-            className={`mono text-[10px] uppercase tracking-wider px-2 h-8 surface-sunk rounded-[4px] flex items-center gap-1.5 hover:ring-accent ${
+            className={`mono text-[10px] px-2 h-8 surface-sunk rounded-[4px] flex items-center gap-1.5 hover:ring-accent ${
               refreshing ? 'text-accent' : ''
             }`}
           >
@@ -99,7 +139,7 @@ export function Header({
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             title="Modo [D]"
             aria-label="Cambiar modo"
-            className="mono text-[10px] uppercase tracking-wider px-2 h-8 surface-sunk rounded-[4px] flex items-center gap-1.5 hover:ring-accent"
+            className="mono text-[10px] px-2 h-8 surface-sunk rounded-[4px] flex items-center gap-1.5 hover:ring-accent"
           >
             <span>{theme === 'dark' ? '○' : '●'}</span>
             <span className="hidden md:inline">{theme === 'dark' ? 'oscuro' : 'claro'}</span>
@@ -113,7 +153,7 @@ export function Header({
                 <span className="blink">_</span>
               </span>
             </div>
-            <span className="hidden lg:inline mono text-[9px] text-subtle uppercase tracking-wider">
+            <span className="hidden lg:inline mono text-[9px] text-subtle">
               {t.tz}
             </span>
           </div>

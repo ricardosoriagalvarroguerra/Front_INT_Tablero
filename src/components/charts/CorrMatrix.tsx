@@ -16,7 +16,7 @@ export function CorrMatrix({ labels, rho }: Props) {
           <tr>
             <th className="px-1 h-6" />
             {labels.map((l) => (
-              <th key={l} className="px-1 h-6 mono text-[9px] text-subtle uppercase">
+              <th key={l} className="px-1 h-6 mono text-[9px] text-subtle">
                 {l}
               </th>
             ))}
@@ -25,7 +25,7 @@ export function CorrMatrix({ labels, rho }: Props) {
         <tbody>
           {labels.map((a) => (
             <tr key={a}>
-              <td className="px-1.5 mono text-[9px] text-muted uppercase whitespace-nowrap text-right">{a}</td>
+              <td className="px-1.5 mono text-[9px] text-muted whitespace-nowrap text-right">{a}</td>
               {labels.map((b) => {
                 const r = rho(a, b);
                 const bg = corrColor(r);
