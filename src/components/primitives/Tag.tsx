@@ -17,7 +17,7 @@ export function Tag({ children, tone = 'neutral' }: TagProps) {
   const s = map[tone] || map.neutral;
   return (
     <span
-      className="mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-[3px] border"
+      className="text-[10px] px-1.5 py-0.5 rounded-[3px] border whitespace-nowrap"
       style={{ background: s.bg, color: s.fg, borderColor: s.bd }}
     >
       {children}

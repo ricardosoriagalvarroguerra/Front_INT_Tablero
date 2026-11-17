@@ -40,7 +40,7 @@ export function RiesgoPanel(_: { now: Date }) {
       <div className="overflow-auto scrollbar-thin max-h-[70vh]">
         <table className="w-full border-collapse">
           <thead className="sticky top-0 surface">
-            <tr className="mono text-[9px] uppercase tracking-wider text-subtle">
+            <tr className="mono text-[9px] text-subtle">
               <th className="text-left px-2 h-7 border-b border-token">País</th>
               <th className="text-right px-2 border-b border-token">Score</th>
               <th className="text-right px-2 border-b border-token">Macro</th>

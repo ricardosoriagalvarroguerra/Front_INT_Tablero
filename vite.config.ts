@@ -10,6 +10,9 @@ const API_TARGET = process.env.VITE_API_PROXY ?? 'http://localhost:5176';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // El respaldo embebido (snapshot.json) viaja en un chunk aparte que sólo se
+  // descarga si el API no responde; su tamaño no afecta la carga normal.
+  build: { chunkSizeWarningLimit: 900 },
   server: {
     port: Number(process.env.PORT) || 5182,
     host: true,

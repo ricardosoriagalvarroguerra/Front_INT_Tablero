@@ -23,7 +23,7 @@ export function ModuloEnConstruccion({
       <div className="p-5 flex flex-col gap-3">
         <p className="text-[13px] text-muted max-w-2xl leading-relaxed">{pregunta}</p>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="mono text-[9px] uppercase tracking-wider text-subtle">Fuentes:</span>
+          <span className="mono text-[9px] text-subtle">Fuentes:</span>
           {fuentes.map((f) => (
             <Tag key={f}>{f}</Tag>
           ))}

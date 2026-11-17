@@ -18,7 +18,7 @@ const ESTADO_TONE: Record<Estado, { dot: string; label: string }> = {
 export function FreshnessBadge({ prov, now }: { prov: Provenance; now: Date }) {
   const e = ESTADO_TONE[prov.estado] ?? ESTADO_TONE.cold;
   return (
-    <span className="inline-flex items-center gap-1.5 mono text-[9px] uppercase tracking-wider text-subtle">
+    <span className="inline-flex items-center gap-1.5 mono text-[9px] text-subtle">
       <span className="w-1.5 h-1.5 rounded-full" style={{ background: e.dot }} />
       <span>{prov.fuente}</span>
       <span className="text-subtle">· {antiguedad(prov.asof, now)}</span>

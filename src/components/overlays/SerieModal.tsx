@@ -124,6 +124,12 @@ function ModalInner({ spec, onClose }: { spec: SerieSpec; onClose: () => void })
               yUnit={unidad === '%' ? '%' : ''}
               height={240}
             />
+            {data.proyeccion && data.proyeccion.length > 0 && (
+              <div className="text-[11px] text-muted">
+                Proyección FMI (WEO):{' '}
+                {data.proyeccion.map((p) => `${p.fecha.slice(0, 4)} ${num(p.valor, 1)}`).join(' · ')}
+              </div>
+            )}
 
             {/* rangos + min/max */}
             <div className="flex items-center justify-between gap-2 flex-wrap">

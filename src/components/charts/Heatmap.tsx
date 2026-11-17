@@ -44,14 +44,14 @@ export function Heatmap({ indicadores, paises, cell, onCell }: Props) {
       <table className="border-collapse w-full">
         <thead className="sticky top-0 z-10">
           <tr>
-            <th className="sticky left-0 z-20 surface text-left px-2 h-8 mono text-[10px] uppercase tracking-wider text-subtle border-b border-r border-token">
+            <th className="sticky left-0 z-20 surface text-left px-2 h-8 mono text-[10px] text-subtle border-b border-r border-token">
               País
             </th>
             {indicadores.map((ind) => (
               <th
                 key={ind.codigo}
                 title={`${ind.nombreEs} (${ind.unidad})`}
-                className="surface px-2 h-8 mono text-[10px] uppercase tracking-wider text-muted border-b border-token whitespace-nowrap"
+                className="surface px-2 h-8 mono text-[10px] text-muted border-b border-token whitespace-nowrap"
               >
                 {ABBR[ind.codigo] ?? ind.codigo}
               </th>

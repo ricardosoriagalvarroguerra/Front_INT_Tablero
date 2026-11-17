@@ -18,28 +18,39 @@ import { ComercioPanel } from './components/modules/ComercioPanel';
 import { ConflictosPanel } from './components/modules/ConflictosPanel';
 import { LatamPanel } from './components/modules/LatamPanel';
 import { CalendarioPanel } from './components/modules/CalendarioPanel';
+import { AnalisisPanel } from './components/modules/AnalisisPanel';
+import { HistoricoPanel } from './components/modules/HistoricoPanel';
+import { NotaEjecutiva } from './components/overlays/NotaEjecutiva';
+import { invalidarAnalisis } from './lib/useAnalisis';
+
+interface Nav {
+  goto: (t: string) => void;
+  pais: string;
+  verPais: (iso3: string) => void;
+}
 
 interface TabDef {
   id: string;
-  badge: string;
   label: string;
   /** Sólo estas vistas responden a los filtros región/grupo → la barra se muestra ahí. */
   filtrable?: boolean;
-  render: (now: Date, goto: (t: string) => void) => ReactNode;
+  render: (now: Date, nav: Nav) => ReactNode;
 }
 
 const TABS: TabDef[] = [
-  { id: 'resumen', badge: '⊞', label: 'Resumen', render: (now, goto) => <ResumenPanel now={now} onGoto={goto} /> },
-  { id: 'pulso', badge: '1', label: 'Pulso global', render: (now) => <PulsoPanel now={now} /> },
-  { id: 'heatmap', badge: '2', label: 'Heatmap macro', filtrable: true, render: (now) => <HeatmapPanel now={now} /> },
-  { id: 'riesgo', badge: '3', label: 'Riesgo soberano', filtrable: true, render: (now) => <RiesgoPanel now={now} /> },
-  { id: 'fx', badge: '4', label: 'FX & commodities', render: (now) => <FxPanel now={now} /> },
-  { id: 'tasas', badge: '5', label: 'Inflación y tasas reales', filtrable: true, render: (now) => <TasasPanel now={now} /> },
-  { id: 'comercio', badge: '6', label: 'Comercio y flujos', filtrable: true, render: (now) => <ComercioPanel now={now} /> },
-  { id: 'conflictos', badge: '7', label: 'Conflictos', render: (now) => <ConflictosPanel now={now} /> },
-  { id: 'latam', badge: '8', label: 'Foco LatAm', render: (now) => <LatamPanel now={now} /> },
-  { id: 'calendario', badge: '9', label: 'Calendario', render: (now) => <CalendarioPanel now={now} /> },
-  { id: 'medios', badge: '📺', label: 'Muro de medios', render: () => <MediaWall /> },
+  { id: 'resumen', label: 'Resumen', render: (now, n) => <ResumenPanel now={now} onGoto={n.goto} /> },
+  { id: 'analisis', label: 'Análisis', render: (_, n) => <AnalisisPanel onGoto={n.goto} onPais={n.verPais} /> },
+  { id: 'historico', label: 'Histórico', render: (_, n) => <HistoricoPanel key={n.pais} inicial={n.pais} /> },
+  { id: 'pulso', label: 'Pulso', render: (now) => <PulsoPanel now={now} /> },
+  { id: 'heatmap', label: 'Mapa de calor', filtrable: true, render: (now) => <HeatmapPanel now={now} /> },
+  { id: 'riesgo', label: 'Riesgo soberano', filtrable: true, render: (now) => <RiesgoPanel now={now} /> },
+  { id: 'fx', label: 'Monedas y commodities', render: (now) => <FxPanel now={now} /> },
+  { id: 'tasas', label: 'Inflación y tasas', filtrable: true, render: (now) => <TasasPanel now={now} /> },
+  { id: 'comercio', label: 'Comercio', filtrable: true, render: (now) => <ComercioPanel now={now} /> },
+  { id: 'conflictos', label: 'Geopolítica', render: (now) => <ConflictosPanel now={now} /> },
+  { id: 'latam', label: 'América Latina', render: (now) => <LatamPanel now={now} /> },
+  { id: 'calendario', label: 'Calendario', render: (now) => <CalendarioPanel now={now} /> },
+  { id: 'medios', label: 'Medios', render: () => <MediaWall /> },
 ];
 
 function Shell() {
@@ -49,6 +60,8 @@ function Shell() {
   const [active, setActive] = useState('resumen');
   const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [nota, setNota] = useState(false);
+  const [pais, setPais] = useState('ARG');
   const searchRef = useRef<HTMLInputElement>(null);
   const filtros = useFiltros();
 
@@ -69,6 +82,7 @@ function Shell() {
   }, [theme]);
 
   const refresh = () => {
+    invalidarAnalisis();
     setRefreshing(true);
     setRefreshKey((k) => k + 1);
     setTimeout(() => setRefreshing(false), 800);
@@ -85,6 +99,8 @@ function Shell() {
         setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
       } else if ((e.key === 'r' || e.key === 'R') && !typing) {
         refresh();
+      } else if ((e.key === 'n' || e.key === 'N') && !typing && !e.metaKey && !e.ctrlKey) {
+        setNota((v) => !v);
       } else if (e.key === 'Escape') {
         searchRef.current?.blur();
       }
@@ -94,6 +110,11 @@ function Shell() {
   }, []);
 
   const activeTab = TABS.find((t) => t.id === active) ?? TABS[0];
+  const goto = (t: string) => {
+    setActive(TABS.some((x) => x.id === t) ? t : 'analisis');
+    window.scrollTo({ top: 0 });
+  };
+  const nav: Nav = { goto, pais, verPais: (iso3) => (setPais(iso3), goto('historico')) };
 
   return (
     <ThemeContext.Provider value={theme}>
@@ -107,6 +128,8 @@ function Shell() {
           query={filtros.query}
           setQuery={(q) => filtros.set('query', q)}
           now={now}
+          onNota={() => setNota(true)}
+          onAlertas={() => goto('analisis')}
         />
 
         <nav className="sticky top-12 z-20 surface border-l-0 border-r-0 border-t-0 border-token">
@@ -115,13 +138,12 @@ function Shell() {
               <button
                 key={t.id}
                 onClick={() => setActive(t.id)}
-                className={`mono text-[11px] px-2.5 h-9 flex items-center gap-1.5 whitespace-nowrap border-b-2 transition-colors ${
+                className={`text-[12px] px-2.5 h-9 flex items-center whitespace-nowrap border-b-2 transition-colors ${
                   active === t.id
-                    ? 'border-[var(--accent)] text-[var(--fg)]'
+                    ? 'border-[var(--accent)] text-[var(--fg)] font-medium'
                     : 'border-transparent text-muted hover:text-[var(--fg)]'
                 }`}
               >
-                <span className="text-subtle">{t.badge}</span>
                 {t.label}
               </button>
             ))}
@@ -131,11 +153,12 @@ function Shell() {
         {activeTab.filtrable && <FilterBar />}
 
         <main key={refreshKey} className="flex-1 p-3 sm:p-4 max-w-[1600px] w-full mx-auto">
-          {activeTab.render(nowSlow, setActive)}
+          {activeTab.render(nowSlow, nav)}
         </main>
 
         <HealthFooter now={nowSlow} />
         <SerieModal />
+        {nota && <NotaEjecutiva onClose={() => setNota(false)} />}
       </div>
     </ThemeContext.Provider>
   );

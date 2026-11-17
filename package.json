@@ -1,7 +1,7 @@
 {
   "name": "tablero-inteligente-int",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.9.0",
   "type": "module",
   "description": "Tablero Inteligente INT — command center de inteligencia económica internacional (frontend).",
   "scripts": {
@@ -9,7 +9,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
-    "gen:map": "node scripts/generate-world-map.mjs"
+    "gen:map": "node scripts/generate-world-map.mjs",
+    "snapshot": "node scripts/snapshot.mjs"
   },
   "dependencies": {
     "d3": "^7.9.0",
